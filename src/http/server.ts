@@ -1,11 +1,13 @@
 import fastify from 'fastify';
 import {
+  type ZodTypeProvider,
   serializerCompiler,
   validatorCompiler,
-  type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
-import { createGoal } from '../functions/create-goal';
 import z from 'zod';
+import { createGoal } from '../functions/create-goal';
+import { createGoalCompletion } from '../functions/create-goal-completion';
+import { getWeekPendingGoals } from '../functions/get-week-pending-goals';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -21,6 +23,12 @@ async function boostrap() {
 }
 
 function registerRoutes() {
+  app.get('/pending-goals', async () => {
+    const { pendingGoals } = await getWeekPendingGoals();
+
+    return { pendingGoals };
+  });
+
   app.post(
     '/goals',
     {
@@ -38,6 +46,26 @@ function registerRoutes() {
         title,
         desiredWeeklyFrequency,
       });
+    }
+  );
+
+  app.post(
+    '/completions',
+    {
+      schema: {
+        body: z.object({
+          goalId: z.string(),
+        }),
+      },
+    },
+    async req => {
+      const { goalId } = req.body;
+
+      const result = await createGoalCompletion({
+        goalId,
+      });
+
+      return result;
     }
   );
 }
