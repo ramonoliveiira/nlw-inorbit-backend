@@ -1,3 +1,4 @@
+import fastifyCors from '@fastify/cors';
 import fastify from 'fastify';
 import {
   type ZodTypeProvider,
@@ -7,8 +8,13 @@ import {
 import { createCompletionRoute } from './routes/create-completion';
 import { createGoalRoute } from './routes/create-goal';
 import { getPendingGoalsRoute } from './routes/get-pending-goals';
+import { getWeekSummaryRoute } from './routes/get-week-summary';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
+
+app.register(fastifyCors, {
+  origin: '*',
+});
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -25,6 +31,7 @@ function registerRoutes() {
   app.register(createGoalRoute);
   app.register(createCompletionRoute);
   app.register(getPendingGoalsRoute);
+  app.register(getWeekSummaryRoute);
 }
 
 boostrap();
